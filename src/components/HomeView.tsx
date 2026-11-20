@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Zap,
   Infinity as InfinityIcon,
@@ -21,8 +21,8 @@ import {
   Sun,
   Check,
   Target,
-  Lightbulb,
-  X,
+  SlidersHorizontal,
+  ChevronDown,
   Gauge,
 } from 'lucide-react';
 import {
@@ -58,16 +58,29 @@ interface HomeViewProps {
 }
 
 const CATEGORY_ICONS: Record<ConcreteCategoryId, React.ReactNode> = {
-  multiples: <Layers size={18} strokeWidth={2.3} />,
-  powers: <Zap size={18} strokeWidth={2.3} />,
-  'squares-roots': <Radical size={18} strokeWidth={2.3} />,
-  traps: <ShieldAlert size={18} strokeWidth={2.3} />,
+  multiples: <Layers size={18} strokeWidth={2.2} />,
+  powers: <Zap size={18} strokeWidth={2.2} />,
+  'squares-roots': <Radical size={18} strokeWidth={2.2} />,
+  traps: <ShieldAlert size={18} strokeWidth={2.2} />,
+};
+
+const MOBILE_SUBTITLES: Record<ConcreteCategoryId, string> = {
+  multiples: '12 · 15 · 16 · 18 · 24 · 36',
+  powers: '2ⁿ · 3ⁿ · 5ⁿ çift yönlü',
+  'squares-roots': '11–25 kare · √72 = 6√2',
+  traps: '51 · 57 · 87 · 91',
 };
 
 const DIFFICULTY_LABELS: Record<Difficulty, string> = {
   warmup: 'Isınma',
   standard: 'LGS',
   master: 'Usta',
+};
+
+const STYLE_LABELS: Record<AnswerStyle, string> = {
+  hybrid: 'Hibrit',
+  choice: '4 Şıklı',
+  input: 'Yazmalı',
 };
 
 function formatMinutes(sec: number): string {
@@ -88,11 +101,12 @@ export const HomeView: React.FC<HomeViewProps> = ({
   onToggleAutoSubmit,
   onToggleSound,
   onToggleTheme,
-  onDismissTip,
   onStartGame,
   onOpenReference,
   onDismissWeakSpot,
 }) => {
+  const [settingsOpen, setSettingsOpen] = useState(false);
+
   const dailyPct = Math.min(
     100,
     Math.round((stats.daily.secondsPracticed / DAILY_GOAL_SECONDS) * 100)
@@ -114,20 +128,24 @@ export const HomeView: React.FC<HomeViewProps> = ({
   const mixedMeta = CATEGORIES.mixed;
   const mixedRecord = getSprintRecord(stats, 'mixed', stats.sprintDuration);
 
-  const radius = 22;
+  const radius = 19;
   const circumference = 2 * Math.PI * radius;
   const dashOffset = circumference - (dailyPct / 100) * circumference;
 
+  const modeSummary =
+    selectedMode === 'sprint' ? `${stats.sprintDuration}sn Sprint` : 'Serbest Pratik';
+
   return (
     <div className="page-shell fade-in">
+      {/* Compact Brand Header */}
       <header className="top-bar">
         <div className="brand">
           <div className="brand-logo">
-            <Zap size={20} strokeWidth={2.6} />
+            <Zap size={19} strokeWidth={2.5} />
           </div>
           <div>
             <h1 className="brand-title">LGS Refleks</h1>
-            <p className="brand-sub">Günde 10 dk matematik hız antrenmanı</p>
+            <p className="brand-sub">Günde 10 dk matematik hızı</p>
           </div>
         </div>
 
@@ -146,7 +164,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
             aria-label={stats.theme === 'dark' ? 'Açık tema' : 'Koyu tema'}
             title={stats.theme === 'dark' ? 'Açık Tema' : 'Koyu Tema'}
           >
-            {stats.theme === 'dark' ? <Sun size={17} /> : <Moon size={17} />}
+            {stats.theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
           </button>
           <button
             className="icon-btn"
@@ -154,36 +172,36 @@ export const HomeView: React.FC<HomeViewProps> = ({
             aria-label={stats.soundEnabled ? 'Sesi kapat' : 'Sesi aç'}
             title={stats.soundEnabled ? 'Ses Açık' : 'Ses Kapalı'}
           >
-            {stats.soundEnabled ? <Volume2 size={17} /> : <VolumeX size={17} />}
+            {stats.soundEnabled ? <Volume2 size={16} /> : <VolumeX size={16} />}
           </button>
         </div>
       </header>
 
-      {/* Daily 10-min Goal + 7-Day Mini Calendar */}
+      {/* 1. Compact Daily Goal + 7-Day Mini Calendar */}
       <section className="daily-card">
         <div className="daily-header-row">
           <div className="daily-left">
             <div className="ring-wrap" aria-label={`Günlük hedef %${dailyPct}`}>
-              <svg width="54" height="54" viewBox="0 0 54 54">
+              <svg width="46" height="46" viewBox="0 0 46 46">
                 <circle
                   className="ring-track"
-                  cx="27"
-                  cy="27"
+                  cx="23"
+                  cy="23"
                   r={radius}
-                  strokeWidth="5"
+                  strokeWidth="4.5"
                   fill="none"
                 />
                 <circle
                   className={`ring-fill ${dailyReached ? 'ring-fill--done' : ''}`}
-                  cx="27"
-                  cy="27"
+                  cx="23"
+                  cy="23"
                   r={radius}
-                  strokeWidth="5"
+                  strokeWidth="4.5"
                   fill="none"
                   strokeDasharray={circumference}
                   strokeDashoffset={dashOffset}
                   strokeLinecap="round"
-                  transform="rotate(-90 27 27)"
+                  transform="rotate(-90 23 23)"
                 />
               </svg>
               <span className="ring-text">%{dailyPct}</span>
@@ -193,8 +211,8 @@ export const HomeView: React.FC<HomeViewProps> = ({
               <span className="daily-label">
                 {dailyReached ? (
                   <>
-                    <CheckCircle2 size={16} className="text-emerald" />
-                    Günlük 10 dk hedefi tamam!
+                    <CheckCircle2 size={15} className="text-emerald" />
+                    10 dk hedefi tamam!
                   </>
                 ) : (
                   <>Günlük 10 dk Hedefi</>
@@ -205,18 +223,17 @@ export const HomeView: React.FC<HomeViewProps> = ({
                 {stats.daily.questionsSolved > 0 && (
                   <> · {stats.daily.questionsSolved} soru</>
                 )}
-                {todayAcc !== null && <> · %{todayAcc} isabet</>}
+                {todayAcc !== null && <> · %{todayAcc}</>}
               </span>
             </div>
           </div>
 
           <div className="streak-pill" title="Günlük seri">
-            <Flame size={15} />
+            <Flame size={14} />
             <span>{stats.streakDays} gün</span>
           </div>
         </div>
 
-        {/* 7-Day Weekly Calendar Strip */}
         <div className="week-strip" aria-label="Haftalık çalışma takvimi">
           {weekDays.map((day) => {
             const hasActivity = day.seconds > 0 && !day.goalReached;
@@ -236,7 +253,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
                       : ''
                   }`}
                 >
-                  {day.goalReached && <Check size={11} strokeWidth={3} />}
+                  {day.goalReached && <Check size={10} strokeWidth={3} />}
                 </span>
               </div>
             );
@@ -244,132 +261,28 @@ export const HomeView: React.FC<HomeViewProps> = ({
         </div>
       </section>
 
-      {/* One-time Quick Tip */}
-      {!stats.dismissedTip && (
-        <div className="tip-banner">
-          <Lightbulb size={16} className="tip-icon" />
-          <p className="tip-text">
-            <strong>Hız İpucu:</strong> <strong>Oto Onay</strong> açıkken doğru
-            rakamları yazdığın anda soru otomatik geçer. Masaüstünde{' '}
-            <code>1–4</code> ve <code>0–9</code> tuşlarıyla ışık hızında
-            çözebilirsin.
-          </p>
-          <button
-            className="tip-close"
-            onClick={onDismissTip}
-            aria-label="İpucunu kapat"
-          >
-            <X size={15} />
-          </button>
-        </div>
-      )}
-
-      {/* Controls: Mode, Duration, Difficulty, Answer Style & Auto-Submit */}
-      <section className="controls-stack">
-        <div className="controls-row">
-          <div className="segmented" role="group" aria-label="Oyun modu">
-            <button
-              className={`seg-btn ${selectedMode === 'sprint' ? 'seg-btn--active' : ''}`}
-              onClick={() => onSelectMode('sprint')}
-            >
-              <Zap size={14} />
-              <span>Sprint</span>
-            </button>
-            <button
-              className={`seg-btn ${selectedMode === 'practice' ? 'seg-btn--active' : ''}`}
-              onClick={() => onSelectMode('practice')}
-            >
-              <InfinityIcon size={14} />
-              <span>Pratik</span>
-            </button>
-          </div>
-
-          {selectedMode === 'sprint' && (
-            <div className="segmented" role="group" aria-label="Sprint süresi">
-              {([30, 60, 90] as SprintDuration[]).map((dur) => (
-                <button
-                  key={dur}
-                  className={`seg-btn seg-btn--compact ${
-                    stats.sprintDuration === dur ? 'seg-btn--active' : ''
-                  }`}
-                  onClick={() => onSelectDuration(dur)}
-                >
-                  {dur}sn
-                </button>
-              ))}
-            </div>
-          )}
-
-          <div className="segmented" role="group" aria-label="Zorluk seviyesi">
-            {(['warmup', 'standard', 'master'] as Difficulty[]).map((d) => (
-              <button
-                key={d}
-                className={`seg-btn seg-btn--compact ${
-                  stats.difficulty === d ? 'seg-btn--active' : ''
-                }`}
-                onClick={() => onSelectDifficulty(d)}
-              >
-                {DIFFICULTY_LABELS[d]}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div className="controls-row">
-          <div className="segmented" role="group" aria-label="Cevaplama tarzı">
-            <button
-              className={`seg-btn ${stats.answerStyle === 'hybrid' ? 'seg-btn--active' : ''}`}
-              onClick={() => onSelectAnswerStyle('hybrid')}
-              title="Kategoriye göre en hızlı yöntem (yazmalı + 4 şıklı)"
-            >
-              <Sparkles size={14} />
-              <span>Hibrit</span>
-            </button>
-            <button
-              className={`seg-btn ${stats.answerStyle === 'choice' ? 'seg-btn--active' : ''}`}
-              onClick={() => onSelectAnswerStyle('choice')}
-              title="Tüm sorular 4 şıklı"
-            >
-              <Grid2x2 size={14} />
-              <span>4 Şıklı</span>
-            </button>
-            <button
-              className={`seg-btn ${stats.answerStyle === 'input' ? 'seg-btn--active' : ''}`}
-              onClick={() => onSelectAnswerStyle('input')}
-              title="Klavye / tuş takımı ile direkt yazmalı"
-            >
-              <Keyboard size={14} />
-              <span>Yazmalı</span>
-            </button>
-          </div>
-
-          {stats.answerStyle !== 'choice' && (
-            <button
-              className={`toggle-pill ${stats.autoSubmit ? 'toggle-pill--on' : ''}`}
-              onClick={onToggleAutoSubmit}
-              title="Doğru cevap yazıldığı anda Enter'a basmadan otomatik onaylar"
-            >
-              <Gauge size={14} />
-              <span>Oto Onay: {stats.autoSubmit ? 'Açık' : 'Kapalı'}</span>
-            </button>
-          )}
-        </div>
-      </section>
-
-      {/* Hero Mixed Sprint Card */}
+      {/* 2. PRIME ABOVE-THE-FOLD HERO: Instant Sprint Launch */}
       <section className="hero-section">
         <button className="hero-card" onClick={() => onStartGame('mixed')}>
           <div className="hero-glow" aria-hidden="true" />
           <div className="hero-left">
-            <div className="hero-badge">
-              <Shuffle size={13} />
-              <span>
-                Önerilen Günlük Egzersiz · {DIFFICULTY_LABELS[stats.difficulty]}
-              </span>
+            <div className="hero-top-row">
+              <div className="hero-badge">
+                <Shuffle size={12} />
+                <span>Günlük Karışık</span>
+              </div>
+              <div className="record-pill record-pill--hero">
+                <Trophy size={13} />
+                <span>
+                  Rekor <strong>{mixedRecord}</strong>
+                </span>
+              </div>
             </div>
+
             <h2 className="hero-title">{mixedMeta.title}</h2>
             <p className="hero-desc">{mixedMeta.description}</p>
-            <div className="chip-row">
+
+            <div className="chip-row hero-chips-desktop">
               {mixedMeta.examples.map((ex) => (
                 <span key={ex} className="hero-chip">
                   {ex}
@@ -379,16 +292,11 @@ export const HomeView: React.FC<HomeViewProps> = ({
           </div>
 
           <div className="hero-right">
-            <div className="record-pill record-pill--hero">
-              <Trophy size={14} />
-              <span>
-                {stats.sprintDuration}sn Rekor: <strong>{mixedRecord}</strong>
-              </span>
-            </div>
             <span className="hero-cta">
+              <Zap size={16} />
               <span>
                 {selectedMode === 'sprint'
-                  ? `${stats.sprintDuration}sn Başlat`
+                  ? `${stats.sprintDuration}sn Sprint Başlat`
                   : 'Pratiğe Başla'}
               </span>
               <ArrowRight size={16} />
@@ -397,82 +305,209 @@ export const HomeView: React.FC<HomeViewProps> = ({
         </button>
       </section>
 
-      {/* 4 Core Category Cards with Mastery Bar */}
-      <section className="cat-grid">
-        {CONCRETE_CATEGORIES.map((id) => {
-          const meta = CATEGORIES[id];
-          const record = getSprintRecord(stats, id, stats.sprintDuration);
-          const cStat = stats.categoryStats[id];
-          const acc =
-            cStat && cStat.solved > 0
-              ? Math.round((cStat.correct / cStat.solved) * 100)
-              : null;
-
-          return (
-            <button
-              key={id}
-              className="cat-card"
-              style={
-                {
-                  '--cat-accent': meta.accent,
-                  '--cat-soft': meta.accentSoft,
-                  '--cat-border': meta.accentBorder,
-                } as React.CSSProperties
-              }
-              onClick={() => onStartGame(id)}
-            >
-              <div className="cat-card-top">
-                <span className="cat-icon-badge">{CATEGORY_ICONS[id]}</span>
-                <div className="record-pill">
-                  <Trophy size={12} />
-                  <span>{record}</span>
-                </div>
-              </div>
-
-              <h3 className="cat-title">{meta.title}</h3>
-              <p className="cat-desc">{meta.description}</p>
-
-              {/* Per-Category Mastery Indicator */}
-              {acc !== null && (
-                <div className="cat-mastery">
-                  <div className="cat-mastery-row">
-                    <span>İsabet %{acc}</span>
-                    <span>{cStat.solved} soru</span>
-                  </div>
-                  <div className="cat-mastery-track">
-                    <div
-                      className="cat-mastery-fill"
-                      style={{ width: `${acc}%` }}
-                    />
-                  </div>
-                </div>
+      {/* 3. Sleek 1-Line Collapsible Settings Summary Bar */}
+      <section className="config-accordion">
+        <button
+          type="button"
+          className={`config-summary-bar ${settingsOpen ? 'config-summary-bar--open' : ''}`}
+          onClick={() => setSettingsOpen((o) => !o)}
+          aria-expanded={settingsOpen}
+        >
+          <div className="config-summary-left">
+            <SlidersHorizontal size={14} className="config-icon" />
+            <div className="config-tags">
+              <span className="config-tag config-tag--primary">{modeSummary}</span>
+              <span className="config-tag">{DIFFICULTY_LABELS[stats.difficulty]}</span>
+              <span className="config-tag">{STYLE_LABELS[stats.answerStyle]}</span>
+              {stats.answerStyle !== 'choice' && stats.autoSubmit && (
+                <span className="config-tag config-tag--accent">Oto Onay</span>
               )}
+            </div>
+          </div>
+          <span className="config-chevron">
+            <span className="config-edit-label">Ayarlar</span>
+            <ChevronDown
+              size={16}
+              className={settingsOpen ? 'chevron-rot' : ''}
+            />
+          </span>
+        </button>
 
-              <div className="cat-footer">
-                <div className="chip-row">
-                  {meta.examples.map((ex) => (
-                    <span key={ex} className="cat-chip">
-                      {ex}
-                    </span>
-                  ))}
+        {settingsOpen && (
+          <div className="config-drawer pop-in">
+            <div className="config-group">
+              <span className="config-group-label">Mod & Süre</span>
+              <div className="config-group-controls">
+                <div className="segmented" role="group" aria-label="Oyun modu">
+                  <button
+                    className={`seg-btn ${selectedMode === 'sprint' ? 'seg-btn--active' : ''}`}
+                    onClick={() => onSelectMode('sprint')}
+                  >
+                    <Zap size={13} />
+                    <span>Sprint</span>
+                  </button>
+                  <button
+                    className={`seg-btn ${selectedMode === 'practice' ? 'seg-btn--active' : ''}`}
+                    onClick={() => onSelectMode('practice')}
+                  >
+                    <InfinityIcon size={13} />
+                    <span>Pratik</span>
+                  </button>
                 </div>
-                <span className="cat-arrow" aria-hidden="true">
-                  <ArrowRight size={15} />
-                </span>
+
+                {selectedMode === 'sprint' && (
+                  <div className="segmented" role="group" aria-label="Sprint süresi">
+                    {([30, 60, 90] as SprintDuration[]).map((dur) => (
+                      <button
+                        key={dur}
+                        className={`seg-btn seg-btn--compact ${
+                          stats.sprintDuration === dur ? 'seg-btn--active' : ''
+                        }`}
+                        onClick={() => onSelectDuration(dur)}
+                      >
+                        {dur}sn
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
-            </button>
-          );
-        })}
+            </div>
+
+            <div className="config-group">
+              <span className="config-group-label">Zorluk</span>
+              <div className="segmented segmented--full" role="group" aria-label="Zorluk seviyesi">
+                {(['warmup', 'standard', 'master'] as Difficulty[]).map((d) => (
+                  <button
+                    key={d}
+                    className={`seg-btn ${stats.difficulty === d ? 'seg-btn--active' : ''}`}
+                    onClick={() => onSelectDifficulty(d)}
+                  >
+                    {DIFFICULTY_LABELS[d]}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="config-group">
+              <span className="config-group-label">Cevaplama</span>
+              <div className="config-group-controls">
+                <div className="segmented segmented--full" role="group" aria-label="Cevaplama tarzı">
+                  <button
+                    className={`seg-btn ${stats.answerStyle === 'hybrid' ? 'seg-btn--active' : ''}`}
+                    onClick={() => onSelectAnswerStyle('hybrid')}
+                  >
+                    <Sparkles size={13} />
+                    <span>Hibrit</span>
+                  </button>
+                  <button
+                    className={`seg-btn ${stats.answerStyle === 'choice' ? 'seg-btn--active' : ''}`}
+                    onClick={() => onSelectAnswerStyle('choice')}
+                  >
+                    <Grid2x2 size={13} />
+                    <span>4 Şıklı</span>
+                  </button>
+                  <button
+                    className={`seg-btn ${stats.answerStyle === 'input' ? 'seg-btn--active' : ''}`}
+                    onClick={() => onSelectAnswerStyle('input')}
+                  >
+                    <Keyboard size={13} />
+                    <span>Yazmalı</span>
+                  </button>
+                </div>
+
+                {stats.answerStyle !== 'choice' && (
+                  <button
+                    className={`toggle-pill ${stats.autoSubmit ? 'toggle-pill--on' : ''}`}
+                    onClick={onToggleAutoSubmit}
+                  >
+                    <Gauge size={14} />
+                    <span>Oto Onay: {stats.autoSubmit ? 'Açık' : 'Kapalı'}</span>
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
       </section>
 
-      {/* Weak Spots (Most Missed) + Playable Drill CTA */}
+      {/* 4. 2x2 Core Category Grid (Compact & Scannable on Mobile!) */}
+      <section className="cat-section">
+        <div className="cat-grid">
+          {CONCRETE_CATEGORIES.map((id) => {
+            const meta = CATEGORIES[id];
+            const record = getSprintRecord(stats, id, stats.sprintDuration);
+            const cStat = stats.categoryStats[id];
+            const acc =
+              cStat && cStat.solved > 0
+                ? Math.round((cStat.correct / cStat.solved) * 100)
+                : null;
+
+            return (
+              <button
+                key={id}
+                className="cat-card"
+                style={
+                  {
+                    '--cat-accent': meta.accent,
+                    '--cat-soft': meta.accentSoft,
+                    '--cat-border': meta.accentBorder,
+                  } as React.CSSProperties
+                }
+                onClick={() => onStartGame(id)}
+              >
+                <div className="cat-card-top">
+                  <span className="cat-icon-badge">{CATEGORY_ICONS[id]}</span>
+                  <div className="record-pill">
+                    <Trophy size={11} />
+                    <span>{record}</span>
+                  </div>
+                </div>
+
+                <h3 className="cat-title">{meta.title}</h3>
+                <p className="cat-desc cat-desc--desktop">{meta.description}</p>
+                <p className="cat-mobile-sub">{MOBILE_SUBTITLES[id]}</p>
+
+                {acc !== null && (
+                  <div className="cat-mastery">
+                    <div className="cat-mastery-row">
+                      <span>%{acc}</span>
+                      <span>{cStat.solved} soru</span>
+                    </div>
+                    <div className="cat-mastery-track">
+                      <div
+                        className="cat-mastery-fill"
+                        style={{ width: `${acc}%` }}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                <div className="cat-footer cat-footer--desktop">
+                  <div className="chip-row">
+                    {meta.examples.map((ex) => (
+                      <span key={ex} className="cat-chip">
+                        {ex}
+                      </span>
+                    ))}
+                  </div>
+                  <span className="cat-arrow" aria-hidden="true">
+                    <ArrowRight size={15} />
+                  </span>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* 5. Weak Spots + Playable Drill CTA */}
       {visibleWeakSpots.length > 0 && (
         <section className="weak-section">
           <div className="section-head">
             <div>
               <h3>Sık Takıldığın Sayılar ({allWeakSpots.length})</h3>
               <span className="section-sub">
-                Üst üste 2 kez doğru bildiğin sayı listeden otomatik silinir
+                Üst üste 2 kez doğru bildiğin sayı otomatik temizlenir
               </span>
             </div>
             {playableWeakCount > 0 && (

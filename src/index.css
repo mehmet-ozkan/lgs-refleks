@@ -260,8 +260,8 @@ button {
 
 .ring-wrap {
   position: relative;
-  width: 54px;
-  height: 54px;
+  width: 46px;
+  height: 46px;
   flex-shrink: 0;
   display: flex;
   align-items: center;
@@ -284,7 +284,7 @@ button {
 .ring-text {
   position: absolute;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.72rem;
+  font-size: 0.66rem;
   font-weight: 700;
   color: var(--text-strong);
 }
@@ -452,20 +452,150 @@ button {
   box-shadow: 0 0 12px var(--emerald-glow);
 }
 
-/* Controls Stack */
+/* Collapsible 1-Line Settings Bar + Drawer */
 
-.controls-stack {
+.config-accordion {
   display: flex;
   flex-direction: column;
-  gap: 9px;
+  gap: 8px;
 }
 
-.controls-row {
+.config-summary-bar {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 14px;
+  background: var(--surface);
+  backdrop-filter: blur(14px);
+  border: 1px solid var(--border);
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.config-summary-bar:hover,
+.config-summary-bar--open {
+  border-color: var(--border-strong);
+  background: var(--surface-hover);
+}
+
+.config-summary-left {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.config-icon {
+  color: var(--primary);
+  flex-shrink: 0;
+}
+
+.config-tags {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
+  gap: 6px;
+}
+
+.config-tag {
+  font-size: 0.74rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 7px;
+  background: var(--surface-muted);
+  color: var(--text);
+  white-space: nowrap;
+}
+
+.config-tag--primary {
+  background: var(--primary-soft);
+  color: var(--primary);
+}
+
+.config-tag--accent {
+  background: var(--emerald-soft);
+  color: var(--emerald);
+}
+
+.config-chevron {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.config-chevron svg {
+  transition: transform 0.2s var(--ease-spring);
+}
+
+.chevron-rot {
+  transform: rotate(180deg);
+}
+
+.config-drawer {
+  background: var(--surface);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.config-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.config-group-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+
+.config-group-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.segmented--full {
+  width: 100%;
+}
+
+.segmented--full .seg-btn {
+  flex: 1;
+}
+
+.hero-top-row {
+  display: flex;
+  align-items: center;
   justify-content: space-between;
   gap: 8px;
+  width: 100%;
+}
+
+.cat-mobile-sub {
+  display: none;
+  margin: 0;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.71rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .segmented {
@@ -2373,7 +2503,18 @@ button {
    ============================================================================ */
 
 @media (max-width: 640px) {
-  .pill-btn-text {
+  .page-shell {
+    gap: 12px;
+    padding: calc(12px + env(safe-area-inset-top, 0px)) 14px calc(32px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .daily-card {
+    padding: 12px 14px;
+    gap: 10px;
+  }
+
+  .pill-btn-text,
+  .config-edit-label {
     display: none;
   }
 
@@ -2384,7 +2525,7 @@ button {
     border-radius: 12px;
   }
 
-  .controls-row {
+  .config-group-controls {
     flex-direction: column;
     align-items: stretch;
   }
@@ -2405,23 +2546,72 @@ button {
 
   .hero-card {
     flex-direction: column;
-    align-items: flex-start;
+    align-items: stretch;
     padding: 18px;
     gap: 14px;
   }
 
+  .hero-left {
+    width: 100%;
+  }
+
   .hero-title {
-    font-size: 1.3rem;
+    font-size: 1.38rem;
+  }
+
+  .hero-desc {
+    font-size: 0.83rem;
+  }
+
+  .hero-chips-desktop {
+    display: none;
   }
 
   .hero-right {
     width: 100%;
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
+    align-items: stretch;
   }
 
-  .cat-grid,
+  .hero-cta {
+    width: 100%;
+    justify-content: center;
+    padding: 13px 16px;
+    font-size: 0.94rem;
+    border-radius: 14px;
+  }
+
+  /* Crisp 2x2 Category Tile Grid on Mobile! */
+  .cat-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .cat-card {
+    padding: 14px;
+    border-radius: 18px;
+    gap: 7px;
+  }
+
+  .cat-icon-badge {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+  }
+
+  .cat-title {
+    font-size: 0.96rem;
+    margin-top: 2px;
+  }
+
+  .cat-desc--desktop,
+  .cat-footer--desktop {
+    display: none;
+  }
+
+  .cat-mobile-sub {
+    display: block;
+  }
+
   .weak-grid,
   .ref-columns {
     grid-template-columns: 1fr;
